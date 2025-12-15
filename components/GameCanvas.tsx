@@ -65,7 +65,12 @@ const GameCanvas: React.FC<GameCanvasProps> = (props) => {
   useEffect(() => {
     updateBounds();
     window.addEventListener('resize', updateBounds);
-    return () => window.removeEventListener('resize', updateBounds);
+    // Also update bounds on scroll just in case, though body is locked
+    window.addEventListener('scroll', updateBounds);
+    return () => {
+        window.removeEventListener('resize', updateBounds);
+        window.removeEventListener('scroll', updateBounds);
+    };
   }, [updateBounds]);
 
   const createParticles = (x: number, y: number, color: string, count: number = 8) => {
@@ -466,16 +471,16 @@ const GameCanvas: React.FC<GameCanvasProps> = (props) => {
      }
   }, [props.score, props.lives]);
 
-  // Optimized Input Handling
+  // Optimized Input Handling for Mouse and Touch
   useEffect(() => {
-    const handleMove = (e: MouseEvent) => {
-      if (!canvasRef.current) return;
+    const handleInputMove = (clientX: number) => {
+       if (!canvasRef.current) return;
       
       // Use cached bounds to prevent layout thrashing (Reflow)
       const { left, scaleX } = boundsRef.current;
       
       // Calculate X relative to the scaled canvas
-      const relativeX = (e.clientX - left) * scaleX;
+      const relativeX = (clientX - left) * scaleX;
       
       let newX = relativeX - paddleRef.current.width / 2;
       
@@ -488,7 +493,7 @@ const GameCanvas: React.FC<GameCanvasProps> = (props) => {
       paddleRef.current.x = newX;
     };
 
-    const handleClick = () => {
+    const handleAction = () => {
        if (propsRef.current.gameState === GameState.PLAYING) {
          const balls = ballsRef.current;
          // Find stuck ball - improved logic to find ANY stuck ball, not just the first one
@@ -502,11 +507,44 @@ const GameCanvas: React.FC<GameCanvasProps> = (props) => {
        }
     };
 
-    window.addEventListener('mousemove', handleMove);
-    window.addEventListener('mousedown', handleClick);
+    const onMouseMove = (e: MouseEvent) => {
+      handleInputMove(e.clientX);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      // Prevent scrolling while playing
+      if (e.target === canvasRef.current) {
+        e.preventDefault();
+      }
+      if (e.touches.length > 0) {
+        handleInputMove(e.touches[0].clientX);
+      }
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      // Prevent default gestures
+      if (e.target === canvasRef.current) {
+        // e.preventDefault(); // Don't strictly prevent default here or click might not fire for UI?
+        // Actually for launching ball, we can just call handleAction
+        handleAction();
+      }
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mousedown', handleAction);
+    
+    // Add touch listeners to window or canvas? 
+    // Binding to window allows dragging even if finger slides off canvas slightly,
+    // but we need to be careful about scrolling.
+    // For this game style, binding to window for move is usually better for "capture".
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchstart', onTouchStart, { passive: false });
+
     return () => {
-      window.removeEventListener('mousemove', handleMove);
-      window.removeEventListener('mousedown', handleClick);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mousedown', handleAction);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchstart', onTouchStart);
     };
   }, []);
 
@@ -515,7 +553,7 @@ const GameCanvas: React.FC<GameCanvasProps> = (props) => {
       ref={canvasRef}
       width={800}
       height={600}
-      className="bg-slate-900 border-4 border-slate-700 shadow-2xl rounded-lg cursor-none"
+      className="block w-full h-full bg-slate-900 border-none cursor-none touch-none"
     />
   );
 };

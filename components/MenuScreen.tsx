@@ -8,10 +8,10 @@ interface MenuScreenProps {
 const MenuScreen: React.FC<MenuScreenProps> = ({ onStart, highScore }) => {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-50 text-white backdrop-blur-sm">
-      <h1 className="text-6xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-neon-blue to-neon-pink animate-pulse-fast">
+      <h1 className="text-4xl md:text-6xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-neon-blue to-neon-pink animate-pulse-fast text-center px-4">
         NEON BREAKOUT
       </h1>
-      <p className="mb-8 text-slate-300">Destroy bricks. Catch power-ups. Survive.</p>
+      <p className="mb-8 text-slate-300 text-center px-4">Destroy bricks. Catch power-ups. Survive.</p>
       
       <div className="bg-slate-800/50 p-6 rounded-lg border border-slate-600 mb-8">
         <h2 className="text-xl text-center mb-2 text-neon-yellow">High Score</h2>
@@ -26,7 +26,7 @@ const MenuScreen: React.FC<MenuScreenProps> = ({ onStart, highScore }) => {
       </button>
 
       <div className="mt-12 text-sm text-slate-500">
-        <p>Mouse to move • Click to launch ball</p>
+        <p>Mouse/Touch to move • Click/Tap to launch</p>
       </div>
     </div>
   );

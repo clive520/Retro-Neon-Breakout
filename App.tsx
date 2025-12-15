@@ -61,7 +61,8 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-      <div className="relative w-[800px] h-[600px] shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800">
+      {/* Responsive Container: Maintains 4/3 aspect ratio, fills width up to 800px */}
+      <div className="relative w-full max-w-[800px] aspect-[4/3] shadow-2xl rounded-lg overflow-hidden border-4 border-slate-800 bg-slate-900">
         
         {/* The Game Canvas handles the rendering and physics loop */}
         <GameCanvas 
